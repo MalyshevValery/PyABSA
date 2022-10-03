@@ -33,17 +33,17 @@ from pyabsa.utils.pyabsa_utils import print_args, resume_from_checkpoint, retry,
 
 import pytorch_warmup as warmup
 
-try:
-    import apex.amp as amp
-
-    # assert torch.version.__version__ < '1.10.0'
-    print('Use FP16 via Apex!')
-except Exception:
-    amp = None
-
-
 class Instructor:
     def __init__(self, opt, logger):
+        if opt.use_amp:
+            try:
+                self.scaler = torch.cuda.amp.GradScaler()
+                print('Use AMP for training!')
+            except Exception:
+                self.scaler = None
+        else:
+            self.scaler = None
+
         self.test_dataloader = None
         self.logger = logger
         self.opt = opt
@@ -140,9 +140,6 @@ class Instructor:
         if self.opt.cross_validate_fold > 0:
             torch.save(self.model.state_dict(), './init_state_dict.bin')
 
-        if amp:
-            self.model, self.optimizer = amp.initialize(self.model, self.optimizer, opt_level="O1")
-
         self.opt.device = torch.device(self.opt.device)
         if self.opt.device.type == 'cuda':
             self.logger.info("cuda memory allocated:{}".format(torch.cuda.memory_allocated(device=self.opt.device)))
@@ -237,9 +234,10 @@ class Instructor:
                     loss = criterion(outputs, targets)
 
                 losses.append(loss.item())
-                if amp:
-                    with amp.scale_loss(loss, self.optimizer) as scaled_loss:
-                        scaled_loss.backward()
+                if self.scaler:
+                    self.scaler.scale(loss).backward()
+                    self.scaler.step(self.optimizer)
+                    self.scaler.update()
                 else:
                     loss.backward()
                     self.optimizer.step()
@@ -392,17 +390,19 @@ class Instructor:
                     self.model.train()
                     self.optimizer.zero_grad()
                     inputs = [sample_batched[col].to(self.opt.device) for col in self.opt.inputs_cols]
-                    outputs = self.model(inputs)
-                    targets = sample_batched['label'].to(self.opt.device)
+                    with torch.cuda.amp.autocast():
+                        outputs = self.model(inputs)
+                        targets = sample_batched['label'].to(self.opt.device)
 
-                    if isinstance(outputs, dict) and 'loss' in outputs:
-                        loss = outputs['loss']
-                    else:
-                        loss = criterion(outputs, targets)
+                        if isinstance(outputs, dict) and 'loss' in outputs:
+                            loss = outputs['loss']
+                        else:
+                            loss = criterion(outputs, targets)
 
-                    if amp:
-                        with amp.scale_loss(loss, self.optimizer) as scaled_loss:
-                            scaled_loss.backward()
+                    if self.scaler:
+                        self.scaler.scale(loss).backward()
+                        self.scaler.step(self.optimizer)
+                        self.scaler.update()
                     else:
                         loss.backward()
                         self.optimizer.step()

@@ -31,7 +31,8 @@ _tad_config_template = {'model': TADBERT,
                         'polarities_dim': 3,
                         'log_step': 10,
                         'evaluate_begin': 0,
-                        'cross_validate_fold': -1
+                        'cross_validate_fold': -1,
+                        'use_amp': False,
                         # split train and test datasets into 5 folds and repeat 3 training
                         }
 
@@ -53,7 +54,8 @@ _tad_config_base = {'model': TADBERT,
                     'polarities_dim': 3,
                     'log_step': 10,
                     'evaluate_begin': 0,
-                    'cross_validate_fold': -1
+                    'cross_validate_fold': -1,
+                    'use_amp': False,
                     # split train and test datasets into 5 folds and repeat 3 training
                     }
 
@@ -75,7 +77,8 @@ _tad_config_english = {'model': TADBERT,
                        'polarities_dim': 3,
                        'log_step': 10,
                        'evaluate_begin': 0,
-                       'cross_validate_fold': -1
+                       'cross_validate_fold': -1,
+                       'use_amp': False,
                        # split train and test datasets into 5 folds and repeat 3 training
                        }
 
@@ -97,7 +100,8 @@ _tad_config_multilingual = {'model': TADBERT,
                             'polarities_dim': 3,
                             'log_step': 10,
                             'evaluate_begin': 0,
-                            'cross_validate_fold': -1
+                            'cross_validate_fold': -1,
+                            'use_amp': False,
                             # split train and test datasets into 5 folds and repeat 3 training
                             }
 
@@ -119,7 +123,8 @@ _tad_config_chinese = {'model': TADBERT,
                        'polarities_dim': 3,
                        'log_step': 10,
                        'evaluate_begin': 0,
-                       'cross_validate_fold': -1
+                       'cross_validate_fold': -1,
+                       'use_amp': False,
                        # split train and test datasets into 5 folds and repeat 3 training
                        }
 
@@ -143,7 +148,8 @@ _tad_config_glove = {'model': TADLSTM,
                      'log_step': 5,
                      'hops': 3,  # valid in MemNet and RAM only
                      'evaluate_begin': 0,
-                     'cross_validate_fold': -1
+                     'cross_validate_fold': -1,
+                     'use_amp': False,
                      }
 
 
@@ -193,7 +199,8 @@ class TADConfigManager(ConfigManager):
             elif configType == 'glove':
                 _tad_config_glove.update(newitem)
             else:
-                raise ValueError("Wrong value of config type supplied, please use one from following type: template, base, english, chinese, multilingual, glove")
+                raise ValueError(
+                    "Wrong value of config type supplied, please use one from following type: template, base, english, chinese, multilingual, glove")
         else:
             raise TypeError("Wrong type of new config item supplied, please use dict e.g.{'NewConfig': NewValue}")
 
@@ -223,24 +230,30 @@ class TADConfigManager(ConfigManager):
 
     @staticmethod
     def get_tad_config_template() -> ConfigManager:
+        _tad_config_template.update(_tad_config_template)
         return TADConfigManager(copy.deepcopy(_tad_config_template))
 
     @staticmethod
     def get_tad_config_base() -> ConfigManager:
-        return TADConfigManager(copy.deepcopy(_tad_config_base))
+        _tad_config_template.update(_tad_config_base)
+        return TADConfigManager(copy.deepcopy(_tad_config_template))
 
     @staticmethod
     def get_tad_config_english() -> ConfigManager:
-        return TADConfigManager(copy.deepcopy(_tad_config_english))
+        _tad_config_template.update(_tad_config_english)
+        return TADConfigManager(copy.deepcopy(_tad_config_template))
 
     @staticmethod
     def get_tad_config_chinese() -> ConfigManager:
-        return TADConfigManager(copy.deepcopy(_tad_config_chinese))
+        _tad_config_template.update(_tad_config_chinese)
+        return TADConfigManager(copy.deepcopy(_tad_config_template))
 
     @staticmethod
     def get_tad_config_multilingual() -> ConfigManager:
-        return TADConfigManager(copy.deepcopy(_tad_config_multilingual))
+        _tad_config_template.update(_tad_config_multilingual)
+        return TADConfigManager(copy.deepcopy(_tad_config_template))
 
     @staticmethod
     def get_tad_config_glove() -> ConfigManager:
-        return TADConfigManager(copy.deepcopy(_tad_config_glove))
+        _tad_config_template.update(_tad_config_glove)
+        return TADConfigManager(copy.deepcopy(_tad_config_template))

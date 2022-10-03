@@ -1,4 +1,20 @@
 {
+  "1.16.18": {
+    "1": "Fix text classification training",
+    "2": "remove support 1.14.3 and earlier versions",
+    "3": "Remove default prints about available checkpoints",
+    "4": "Remove default prints about training args"
+  },
+  "1.16.17": {
+    "1": "Add Kaggle dataset"
+  },
+  "1.16.16": {
+    "1": "Modify the inference file location strategy",
+    "2": "Add use_amp option for using pytorch amp to accelerate training"
+  },
+  "1.16.15": {
+    "1": "Fix conversion of apc datasets to atepc datasets"
+  },
   "1.16.14": {
     "1": "Remove dataset version validation in PyABSA module init",
     "2": "Remove example validation for ATEPC inference"

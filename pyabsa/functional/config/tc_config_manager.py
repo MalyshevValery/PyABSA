@@ -31,7 +31,8 @@ _tc_config_template = {'model': BERT,
                        'polarities_dim': 3,
                        'log_step': 10,
                        'evaluate_begin': 0,
-                       'cross_validate_fold': -1
+                       'cross_validate_fold': -1,
+                       'use_amp': False,
                        # split train and test datasets into 5 folds and repeat 3 training
                        }
 
@@ -194,7 +195,8 @@ class TCConfigManager(ConfigManager):
             elif configType == 'glove':
                 _tc_config_glove.update(newitem)
             else:
-                raise ValueError("Wrong value of config type supplied, please use one from following type: template, base, english, chinese, multilingual, glove")
+                raise ValueError(
+                    "Wrong value of config type supplied, please use one from following type: template, base, english, chinese, multilingual, glove")
         else:
             raise TypeError("Wrong type of new config item supplied, please use dict e.g.{'NewConfig': NewValue}")
 
@@ -224,73 +226,30 @@ class TCConfigManager(ConfigManager):
 
     @staticmethod
     def get_tc_config_template() -> ConfigManager:
+        _tc_config_template.update(_tc_config_template)
         return TCConfigManager(copy.deepcopy(_tc_config_template))
 
     @staticmethod
     def get_tc_config_base() -> ConfigManager:
-        return TCConfigManager(copy.deepcopy(_tc_config_base))
-
-    @staticmethod
-    def get_tc_config_english() -> ConfigManager:
-        return TCConfigManager(copy.deepcopy(_tc_config_english))
-
-    @staticmethod
-    def get_tc_config_chinese() -> ConfigManager:
-        return TCConfigManager(copy.deepcopy(_tc_config_chinese))
-
-    @staticmethod
-    def get_tc_config_multilingual() -> ConfigManager:
-        return TCConfigManager(copy.deepcopy(_tc_config_multilingual))
-
-    @staticmethod
-    def get_tc_config_glove() -> ConfigManager:
-        return TCConfigManager(copy.deepcopy(_tc_config_glove))
-
-    # compatible for v1.14.3 and earlier versions
-    @staticmethod
-    def set_classification_config_template(newitem):
-        TCConfigManager.set_classification_config('template', newitem)
-
-    @staticmethod
-    def set_classification_config_base(newitem):
-        TCConfigManager.set_classification_config('base', newitem)
-
-    @staticmethod
-    def set_classification_config_english(newitem):
-        TCConfigManager.set_classification_config('english', newitem)
-
-    @staticmethod
-    def set_classification_config_chinese(newitem):
-        TCConfigManager.set_classification_config('chinese', newitem)
-
-    @staticmethod
-    def set_classification_config_multilingual(newitem):
-        TCConfigManager.set_classification_config('multilingual', newitem)
-
-    @staticmethod
-    def set_classification_config_glove(newitem):
-        TCConfigManager.set_classification_config('glove', newitem)
-
-    @staticmethod
-    def get_classification_config_template() -> ConfigManager:
+        _tc_config_template.update(_tc_config_base)
         return TCConfigManager(copy.deepcopy(_tc_config_template))
 
     @staticmethod
-    def get_classification_config_base() -> ConfigManager:
-        return TCConfigManager(copy.deepcopy(_tc_config_base))
+    def get_tc_config_english() -> ConfigManager:
+        _tc_config_template.update(_tc_config_english)
+        return TCConfigManager(copy.deepcopy(_tc_config_template))
 
     @staticmethod
-    def get_classification_config_english() -> ConfigManager:
-        return TCConfigManager(copy.deepcopy(_tc_config_english))
+    def get_tc_config_chinese() -> ConfigManager:
+        _tc_config_template.update(_tc_config_chinese)
+        return TCConfigManager(copy.deepcopy(_tc_config_template))
 
     @staticmethod
-    def get_classification_config_chinese() -> ConfigManager:
-        return TCConfigManager(copy.deepcopy(_tc_config_chinese))
+    def get_tc_config_multilingual() -> ConfigManager:
+        _tc_config_template.update(_tc_config_multilingual)
+        return TCConfigManager(copy.deepcopy(_tc_config_template))
 
     @staticmethod
-    def get_classification_config_multilingual() -> ConfigManager:
-        return TCConfigManager(copy.deepcopy(_tc_config_multilingual))
-
-    @staticmethod
-    def get_classification_config_glove() -> ConfigManager:
-        return TCConfigManager(copy.deepcopy(_tc_config_glove))
+    def get_tc_config_glove() -> ConfigManager:
+        _tc_config_template.update(_tc_config_glove)
+        return TCConfigManager(copy.deepcopy(_tc_config_template))
