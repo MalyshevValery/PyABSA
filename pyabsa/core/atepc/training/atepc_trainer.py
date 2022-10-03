@@ -222,7 +222,7 @@ class Instructor:
         sum_apc_test_acc = 0
         sum_apc_test_f1 = 0
         sum_ate_test_f1 = 0
-        self.opt.max_test_metrics = {'max_apc_test_acc': 0, 'max_apc_test_f1': 0, 'max_ate_test_f1': 0}
+        self.opt.max_test_metrics = {'max_apc_test_acc': 0, 'max_apc_test_f1': 0, 'max_ate_test_f1': 0, 'max_sum_test_f1': 0}
         self.opt.metrics_of_this_checkpoint = {'apc_acc': 0, 'apc_f1': 0, 'ate_f1': 0}
         global_step = 0
         save_path = '{0}/{1}_{2}'.format(self.opt.model_path_to_save,
@@ -298,7 +298,8 @@ class Instructor:
 
                         if apc_result['apc_test_acc'] > self.opt.max_test_metrics['max_apc_test_acc'] or \
                             apc_result['apc_test_f1'] > self.opt.max_test_metrics['max_apc_test_f1'] or \
-                            ate_result > self.opt.max_test_metrics['max_ate_test_f1']:
+                            ate_result > self.opt.max_test_metrics['max_ate_test_f1'] or \
+                            (ate_result + apc_result['apc_test_f1']) > self.opt.max_test_metrics['max_sum_test_f1']:
                             patience = self.opt.patience
                             if apc_result['apc_test_acc'] > self.opt.max_test_metrics['max_apc_test_acc']:
                                 self.opt.max_test_metrics['max_apc_test_acc'] = apc_result['apc_test_acc']
@@ -306,14 +307,16 @@ class Instructor:
                                 self.opt.max_test_metrics['max_apc_test_f1'] = apc_result['apc_test_f1']
                             if ate_result > self.opt.max_test_metrics['max_ate_test_f1']:
                                 self.opt.max_test_metrics['max_ate_test_f1'] = ate_result
+                            if (ate_result + apc_result['apc_test_f1']) > self.opt.max_test_metrics['max_sum_test_f1']:
+                                self.opt.max_test_metrics['max_sum_test_f1'] = ate_result + apc_result['apc_test_f1']
 
                             if self.opt.model_path_to_save:
-                                # if save_path:
-                                #     try:
-                                #         shutil.rmtree(save_path)
-                                #         # self.logger.info('Remove sub-self.optimal trained model:', save_path)
-                                #     except:
-                                #         self.logger.info('Can not remove sub-self.optimal trained model:', save_path)
+                                if save_path:
+                                    try:
+                                        shutil.rmtree(save_path)
+                                        self.logger.info('Remove sub-self.optimal trained model:', save_path)
+                                    except:
+                                        self.logger.info('Can not remove sub-self.optimal trained model:', save_path)
 
                                 save_path = '{0}/{1}_{2}_{3}_apcacc_{4}_apcf1_{5}_atef1_{6}/'.format(
                                     self.opt.model_path_to_save,

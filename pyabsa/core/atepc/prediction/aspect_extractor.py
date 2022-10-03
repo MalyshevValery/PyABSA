@@ -93,8 +93,8 @@ class AspectExtractor:
             except Exception as e:
                 raise RuntimeError('Exception: {} Fail to load the model from {}! '.format(e, model_arg))
 
-            if not hasattr(ATEPCModelList, self.model.__class__.__name__):
-                raise KeyError('The checkpoint you are loading is not from any ATEPC model.')
+            # if not hasattr(ATEPCModelList, self.model.__class__.__name__):
+            #     raise KeyError('The checkpoint you are loading is not from any ATEPC model.')
 
         self.processor = ATEPCProcessor(self.tokenizer)
         self.num_labels = len(self.opt.label_list) + 1
@@ -316,7 +316,7 @@ class AspectExtractor:
                 polarity = []
                 for t, l in zip(all_tokens[i + (self.opt.infer_batch_size * i_batch)], pred_iobs):
                     ate_result.append('{}({})'.format(t, l))
-                    if 'ASP' in l:
+                    if l != 'O':
                         polarity.append(-SENTIMENT_PADDING)  # 1 tags the valid position aspect terms
                     else:
                         polarity.append(SENTIMENT_PADDING)

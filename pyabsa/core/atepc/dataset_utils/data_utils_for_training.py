@@ -10,7 +10,8 @@ import tqdm
 
 from pyabsa.core.apc.dataset_utils.apc_utils import configure_spacy_model
 from pyabsa.core.atepc.dataset_utils.atepc_utils import prepare_input_for_atepc
-from pyabsa.utils.pyabsa_utils import check_and_fix_labels, SENTIMENT_PADDING, validate_example, check_and_fix_IOB_labels
+from pyabsa.utils.pyabsa_utils import check_and_fix_labels, SENTIMENT_PADDING, validate_example, \
+    check_and_fix_IOB_labels
 
 Labels = set()
 
@@ -100,8 +101,9 @@ def readfile(filename):
             if len(Labels) > 3:
                 # for more IOB labels support, but can not split cases in some particular conditions, e.g., (B,I,E,O)
                 for p_idx in range(len(p) - 1):
-                    if (p[p_idx] != p[p_idx + 1] and p[p_idx] != str(SENTIMENT_PADDING) and p[p_idx + 1] != str(SENTIMENT_PADDING)) \
-                        or (p[p_idx] != str(SENTIMENT_PADDING) and p[p_idx + 1] == str(SENTIMENT_PADDING)):
+                    if (p[p_idx] != p[p_idx + 1] and p[p_idx] != str(SENTIMENT_PADDING) and p[p_idx + 1] != str(
+                            SENTIMENT_PADDING)) \
+                            or (p[p_idx] != str(SENTIMENT_PADDING) and p[p_idx + 1] == str(SENTIMENT_PADDING)):
                         _p = p[:p_idx + 1] + polarity_padding[p_idx + 1:]
                         p = polarity_padding[:p_idx + 1] + p[p_idx + 1:]
                         prepared_data.append((s, t, _p))
@@ -122,29 +124,32 @@ def readfile(filename):
 
 
 def split_aspect(tag1, tag2=None):
-    if tag1 == 'B-ASP' and tag2 == 'B-ASP':
+    if (tag1.startswith('B-') or tag1.startswith('I-')) and (
+            not tag2 or tag2.startswith('B-') or tag2 == 'O'):  # tag1 == 'B-ASP' and tag2 == 'B-ASP':
         return True
-    if tag1 == 'B-ASP' and tag2 == 'O':
-        return True
-    elif tag1 == 'I-ASP' and tag2 == 'O':
-        return True
-    elif tag1 == 'I-ASP' and tag2 == 'B-ASP':
-        return True
-    elif (tag1 == 'B-ASP' or tag1 == 'I-ASP') and not tag2:
-        return True
-    elif tag1 == 'O' and tag2 == 'I-ASP':
+    # if tag1 == 'B-ASP' and tag2 == 'O':
+    #     return True
+    # elif tag1 == 'I-ASP' and tag2 == 'O':
+    #     return True
+    # elif tag1 == 'I-ASP' and tag2 == 'B-ASP':
+    #     return True
+    # elif (tag1 == 'B-ASP' or tag1 == 'I-ASP') and not tag2:
+    #     return True
+    elif tag1 == 'O':
+        return False
+    # elif tag1 == 'O' and tag2.startswith('I-'):  # tag2== 'I-ASP':
         # warnings.warn('Invalid annotation! Found I-ASP without B-ASP')
+        # return False
+    # elif tag1 == 'O' and tag2 == 'O':
+    #     return False
+    # elif tag1 == 'O' and tag2.startswith('B-'):  # tag2 == 'B-ASP':
+    #     return False
+    # elif tag1 == 'O' and not tag2:
+    #     return False
+    elif tag1 != 'O' and tag1[2:] == tag2[2:]: #tag1 == 'B-ASP' and tag2 == 'I-ASP':
         return False
-    elif tag1 == 'O' and tag2 == 'O':
-        return False
-    elif tag1 == 'O' and tag2 == 'B-ASP':
-        return False
-    elif tag1 == 'O' and not tag2:
-        return False
-    elif tag1 == 'B-ASP' and tag2 == 'I-ASP':
-        return False
-    elif tag1 == 'I-ASP' and tag2 == 'I-ASP':
-        return False
+    # elif tag1 == 'I-ASP' and tag2 == 'I-ASP':
+    #     return False
     else:
         return False
         # raise ValueError('Invalid IOB tag combination: {}, {}'.format(tag1, tag2))
@@ -230,7 +235,8 @@ def convert_examples_to_features(examples, max_seq_len, tokenizer, opt=None):
 
     bos_token = tokenizer.bos_token
     eos_token = tokenizer.eos_token
-    label_map = {label: i for i, label in enumerate(sorted(list(Labels) + [tokenizer.bos_token, tokenizer.eos_token]), 1)}
+    label_map = {label: i for i, label in
+                 enumerate(sorted(list(Labels) + [tokenizer.bos_token, tokenizer.eos_token]), 1)}
     opt.IOB_label_to_index = label_map
     features = []
     polarities_set = set()
@@ -240,7 +246,8 @@ def convert_examples_to_features(examples, max_seq_len, tokenizer, opt=None):
         IOB_label = example.IOB_label
         aspect_label = example.aspect_label
         polarity = example.polarity
-        if polarity != SENTIMENT_PADDING or int(polarity) != SENTIMENT_PADDING:  # bad case handle in Chinese atepc_datasets
+        if polarity != SENTIMENT_PADDING or int(
+                polarity) != SENTIMENT_PADDING:  # bad case handle in Chinese atepc_datasets
             polarities_set.add(polarity)  # ignore samples without polarities
         tokens = []
         labels = []
